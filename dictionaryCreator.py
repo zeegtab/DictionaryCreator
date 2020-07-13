@@ -15,8 +15,6 @@ class Dictionary:
 
     def add_entry(self, newEntry):
 
-        # Create a new object for the new word
-
         print('The new word to be added is: ' + newEntry)
         if self.__confirm_entry(newEntry):
             print("Great! Adding new word...")
@@ -24,7 +22,11 @@ class Dictionary:
             self.wordList.append(newEntry)
             self.wordList.sort()
 
+            print(self.wordList)
+
             self.__list_to_dict()
+
+            self.definitions[newEntry] = '{No Definition}'
             print("\nUpdated dictionary:")
             print(self.words)
 
@@ -107,10 +109,21 @@ class Dictionary:
             newFile.write('\\date{' + self.date + '}\n')
             newFile.write('\\maketitle\n')
 
+            newFile.write('\\begin{multicols}{2}\n')
+
             newFile.write('\\section*{' + self.words[1][0] + '}\n')
+
+            for word_counter in range(0, len(self.words)):
+                self.generate_definition(newFile, self.words[word_counter+1], 'Noun', self.definitions[self.words[word_counter+1]])
+
+            newFile.write('\\end{multicols}\n')
             newFile.write('\\end{document}')
 
             newFile.close()
+
+    def generate_definition(self, fileIterator, entryName, entryType, entryDef):
+        fileIterator.write('\\entry{'+entryName+'}{'+entryType + '}{'+entryDef+'}\n\n')
+        return
 
     def compile(self):
         x = os.system('pdflatex ' + self.file + '.tex')
@@ -122,11 +135,10 @@ class Dictionary:
 
 
 
-myDict = Dictionary('Computer Science Dictionary', 'ZIGGY STARDUST', 'July 2020')
-#myDict.add_entry('Brian')
-#myDict.add_entry('Carnations')
-#myDict.add_entry('Boogie')
-#myDict.add_definition('Boogie')
+myDict = Dictionary('Computer Science Dictionary', 'Zarya Mekathotti', 'July 2020')
+myDict.add_entry('Carnations')
+myDict.add_entry('Boogie')
+myDict.add_definition('Boogie')
 
 myDict.generate_file('newdictionary')
 myDict.compile()
