@@ -1,0 +1,134 @@
+import subprocess
+import os
+
+alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+
+class Dictionary:
+    def __init__(self, newName='', newAuthor='Unknown', newDate='Unknown'):
+        self.name = newName
+        self.author = newAuthor
+        self.date = newDate
+        self.words = {1: 'Brian'}
+        self.wordList = ['Brian']
+        self.definitions = {'Brian': 'A fucking buffoon'}
+        self.file = 'untitled'
+
+    def add_entry(self, newEntry):
+
+        # Create a new object for the new word
+
+        print('The new word to be added is: ' + newEntry)
+        if self.__confirm_entry(newEntry):
+            print("Great! Adding new word...")
+
+            self.wordList.append(newEntry)
+            self.wordList.sort()
+
+            self.__list_to_dict()
+            print("\nUpdated dictionary:")
+            print(self.words)
+
+        else:
+            print("Entry not added.")
+
+
+    def __confirm_entry(self, newEntry):
+
+        message = "The new word: '" + newEntry + "' will be inserted "
+        tempList = []
+
+        for i in range(1, len(self.words) + 1):
+            tempList.append(self.words[i])
+
+        tempList.append(newEntry)
+        tempList.sort()
+
+        if tempList.index(newEntry) != 0:
+            message = message + "after " + tempList[tempList.index(newEntry) - 1]
+
+        if (tempList.index(newEntry) > 0) and (tempList.index(newEntry) < (len(tempList) - 1)):
+            message = message + " and "
+
+        if tempList.index(newEntry) != (len(tempList) - 1):
+            message = message + "before " + tempList[tempList.index(newEntry) + 1]
+
+        print(message + ".")
+
+        choice = input("Continue? (Y) Otherwise cancelled.")
+        if choice == 'Y' or choice == 'y':
+            return True
+        else:
+            return False
+
+    def __list_to_dict(self):
+        self.words = {}
+        entryNum = 1
+        for word in self.wordList:
+            self.words[entryNum] = word
+            entryNum += 1
+        return self.words
+
+    def add_definition(self, entry):
+        if entry in self.wordList:
+            print("Entry found in dictionary...")
+            print("Would you like to add a definition to the entry: " + entry + "? (Y otherwise cancelled)")
+            choice = input()
+
+            if choice == 'Y' or choice == 'y':
+                current_definition = str(input("Enter the definition below:\n"))
+
+                print(entry + ": " + current_definition)
+                print("Are you satisfied with this definition?")
+
+                confirmation = input()
+                if confirmation == 'Y' or confirmation == 'y':
+                    self.definitions[entry] = current_definition
+                    print("Confirmed. Definition has been added to dictionary.")
+
+    def generate_file(self, filename):
+        self.file = filename
+
+        lines_to_copy = []
+        with open("template.txt", "r") as file:
+            for line in file:
+                lines_to_copy.append(line)
+
+        with open(self.file + '.tex', "w") as newFile:
+            item = 0
+            while lines_to_copy[item] != '\\begin{document}\n':
+                newFile.write(lines_to_copy[item])
+                item = item + 1
+            print("Found begin document statement!")
+
+            newFile.write('\\begin{document}\n')
+
+            newFile.write('\\title{' + self.name + '}\n')
+            newFile.write('\\author{' + self.author + '}\n')
+            newFile.write('\\date{' + self.date + '}\n')
+            newFile.write('\\maketitle\n')
+
+            newFile.write('\\section*{' + self.words[1][0] + '}\n')
+            newFile.write('\\end{document}')
+
+            newFile.close()
+
+    def compile(self):
+        x = os.system('pdflatex ' + self.file + '.tex')
+
+        if x != 0:
+            print("Oh no the exit code wasn't 0!!")
+        else:
+            os.system('open ' + self.file + '.pdf')
+
+
+
+myDict = Dictionary('Computer Science Dictionary', 'ZIGGY STARDUST', 'July 2020')
+#myDict.add_entry('Brian')
+#myDict.add_entry('Carnations')
+#myDict.add_entry('Boogie')
+#myDict.add_definition('Boogie')
+
+myDict.generate_file('newdictionary')
+myDict.compile()
+
+
