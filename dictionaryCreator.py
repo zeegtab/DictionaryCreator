@@ -8,12 +8,13 @@ class Dictionary:
         self.name = newName
         self.author = newAuthor
         self.date = newDate
-        self.words = {1: 'Brian'}
-        self.wordList = ['Brian']
-        self.definitions = {'Brian': 'A fucking buffoon'}
+        self.words = {1: 'Hoisting'}
+        self.wordList = ['Hoisting']
+        self.definitions = {'Hoisting': 'When an interpreter (such as the JavaScript interpreter) raises all defined functions to the top of the code before the main program is executed. This means that a function can be called before it has been defined.'}
+        self.types = {'Hoisting':'Verb'}
         self.file = 'untitled'
 
-    def add_entry(self, newEntry):
+    def add_entry(self, newEntry, type=''):
 
         print('The new word to be added is: ' + newEntry)
         if self.__confirm_entry(newEntry):
@@ -27,6 +28,8 @@ class Dictionary:
             self.__list_to_dict()
 
             self.definitions[newEntry] = '{No Definition}'
+            self.types[newEntry] = type
+
             print("\nUpdated dictionary:")
             print(self.words)
 
@@ -74,18 +77,22 @@ class Dictionary:
         if entry in self.wordList:
             print("Entry found in dictionary...")
             print("Would you like to add a definition to the entry: " + entry + "? (Y otherwise cancelled)")
+
             choice = input()
+            confirmation = ''
 
-            if choice == 'Y' or choice == 'y':
-                current_definition = str(input("Enter the definition below:\n"))
+            while confirmation != 'Y' or confirmation != 'y':
+                if choice == 'Y' or choice == 'y':
+                    current_definition = str(input("Enter the definition below:\n"))
 
-                print(entry + ": " + current_definition)
-                print("Are you satisfied with this definition?")
+                    print(entry + ": " + current_definition)
+                    print("Are you satisfied with this definition?")
 
-                confirmation = input()
-                if confirmation == 'Y' or confirmation == 'y':
-                    self.definitions[entry] = current_definition
-                    print("Confirmed. Definition has been added to dictionary.")
+                    confirmation = input()
+                    if confirmation == 'Y' or confirmation == 'y':
+                        self.definitions[entry] = current_definition
+                        print("Confirmed. Definition has been added to dictionary.")
+                        break
 
     def generate_file(self, filename):
         self.file = filename
@@ -109,12 +116,23 @@ class Dictionary:
             newFile.write('\\date{' + self.date + '}\n')
             newFile.write('\\maketitle\n')
 
-            newFile.write('\\begin{multicols}{2}\n')
-
             newFile.write('\\section*{' + self.words[1][0] + '}\n')
 
+            newFile.write('\\begin{multicols}{2}\n')
+
+            current_section = self.wordList[0][0]
+
             for word_counter in range(0, len(self.words)):
-                self.generate_definition(newFile, self.words[word_counter+1], 'Noun', self.definitions[self.words[word_counter+1]])
+                if current_section != self.words[word_counter+1][0]:
+                    current_section = self.words[word_counter+1][0]
+
+                    newFile.write('\\end{multicols}\n')
+                    newFile.write('\\section*{' + current_section.upper() + '}\n')
+                    newFile.write('\\begin{multicols}{2}\n')
+
+                self.generate_definition(newFile, self.words[word_counter + 1],
+                                         self.types[self.words[word_counter + 1]],
+                                         self.definitions[self.words[word_counter + 1]])
 
             newFile.write('\\end{multicols}\n')
             newFile.write('\\end{document}')
@@ -136,9 +154,11 @@ class Dictionary:
 
 
 myDict = Dictionary('Computer Science Dictionary', 'Zarya Mekathotti', 'July 2020')
-myDict.add_entry('Carnations')
-myDict.add_entry('Boogie')
-myDict.add_definition('Boogie')
+myDict.add_entry('Algorithm', 'Noun')
+myDict.add_definition('Algorithm')
+
+myDict.add_entry('Machine Learning', 'Noun')
+myDict.add_definition('Machine Learning')
 
 myDict.generate_file('newdictionary')
 myDict.compile()
